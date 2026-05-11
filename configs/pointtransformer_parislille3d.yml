@@ -1,0 +1,66 @@
+dataset:
+  name: ParisLille3D
+  dataset_path: # path/to/your/dataset
+  cache_dir: ./logs/cache
+  class_weights: [53033221, 25821560, 546190, 54417,
+        180638,  3998129, 160899, 3441844, 9681606]
+  ignored_label_inds: [12]
+  num_points: 65536
+  test_result_folder: ./test
+  val_files:
+    - Lille2.ply
+  use_cache: false
+  steps_per_epoch_train: 50
+  steps_per_epoch_valid: 10
+  use_color: false
+  use_intensity: true
+  sampler:
+    name: SemSegSpatiallyRegularSampler
+model:
+  name: PointTransformer
+  batcher: ConcatBatcher
+  ckpt_path: # path/to/your/checkpoint
+  in_channels: 3
+  blocks: [2, 3, 4, 6, 3]
+  num_classes: 9
+  voxel_size: 0.08           # Increasing it results in faster preprocessing and training. 0.1 changes number of training files from 3/3 to 1/1.
+  max_voxels: 30000         # Increasing it causes out of memory error
+  ignored_label_inds: [-1]
+  augment:
+    rotate:
+      method: vertical
+    scale:
+      min_s: 0.95
+      max_s: 1.05
+    noise:
+      noise_std: 0.005
+    # ChromaticAutoContrast:
+    #   randomize_blend_factor: True
+    #   blend_factor: 0.2
+    # ChromaticTranslation:
+    #   trans_range_ratio: 0.05
+    # ChromaticJitter:
+    #   std: 0.01
+    # HueSaturationTranslation:
+    #   hue_max: 0.5
+    #   saturation_max: 0.2
+pipeline:  # Decreasing learning rate worsens performance
+  name: SemanticSegmentation
+  optimizer:
+    lr: 0.02
+    momentum: 0.9
+    weight_decay: 0.0001
+  batch_size: 16
+  learning_rate: 0.01
+  main_log_dir: ./logs
+  max_epoch: 100
+  save_ckpt_freq: 5
+  scheduler_gamma: 0.99
+  test_batch_size: 1
+  train_sum_dir: train_log
+  val_batch_size: 16
+  summary:
+    record_for: []
+    max_pts:
+    use_reference: false
+    max_outputs: 1
